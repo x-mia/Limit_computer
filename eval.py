@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+
 # # Getting results from the aligned word embeddings
 # Importing
 
@@ -34,15 +35,35 @@ def load_vec(emb_path, nmax):
     return embeddings, id2word, word2id
 
 
-
 # Getting nearest neigbours
 
-def get_nn(word, src_emb, src_id2word, tgt_emb, tgt_id2word, K):
+def get_nn_lim(word, src_emb, src_id2word, tgt_emb, tgt_id2word, treshold):
     word2id = {v: k for k, v in src_id2word.items()}
     ids = []
     word_emb = src_emb[word2id[word]]
     scores = (tgt_emb / np.linalg.norm(tgt_emb, 2, 1)[:, None]).dot(word_emb / np.linalg.norm(word_emb))
-    k_best = scores.argsort()[-K:][::-1]
+    sorted_scores = np.sort(scores)[::-1]
+    lim_scores = []
+    for sort_s in sorted_scores:
+        l = treshold + (int(np.where(sorted_scores == sort_s)[0][0]) * 0.01)
+        if sort_s > l:
+            lim_scores.append(sort_s)
+    k_best = scores.argsort()[-(len(lim_scores)):][::-1]
+    translations = []
+    score = []
+    for i, idx in enumerate(k_best):
+        translations.append(tgt_id2word[idx])
+        score.append(scores[idx])
+        ids.append(word2id[word])
+
+    return translations, score, ids, k_best
+
+def get_nn_knn(word, src_emb, src_id2word, tgt_emb, tgt_id2word, treshold):
+    word2id = {v: k for k, v in src_id2word.items()}
+    ids = []
+    word_emb = src_emb[word2id[word]]
+    scores = (tgt_emb / np.linalg.norm(tgt_emb, 2, 1)[:, None]).dot(word_emb / np.linalg.norm(word_emb))
+    k_best = scores.argsort()[-treshold:][::-1]
     translations = []
     score = []
     for i, idx in enumerate(k_best):
@@ -53,8 +74,7 @@ def get_nn(word, src_emb, src_id2word, tgt_emb, tgt_id2word, K):
     return translations, score, ids
 
 
-
-def get_tgt(eval_df, src_lng, tgt_lng, src_embeddings, src_id2word, tgt_embeddings, tgt_id2word, k_num):
+def get_tgt(eval_df, src_lng, tgt_lng, src_embeddings, src_id2word, tgt_embeddings, tgt_id2word, limit, treshold):
     words = []
     trs = []
     position = []
@@ -65,32 +85,54 @@ def get_tgt(eval_df, src_lng, tgt_lng, src_embeddings, src_id2word, tgt_embeddin
 
     for _, row in tqdm(eval_df.iterrows(), total=eval_df.shape[0], position=0, leave=True):
         word = row[src_lng]
-        words.extend(repeat(word, k_num))
-        try:
-            translated, score, ids = get_nn(word, src_embeddings, src_id2word, tgt_embeddings, tgt_id2word, K=k_num)
-            for y in ids:
-                indexes.append(y)
-                if len(ids) != k_num:
-                    indexes.extend(repeat(y, k_num))
-            for el in translated:
-                trs.append(el)
-                position.append(translated.index(el))
-            for i in score:
-                rel = score[0] - i
-                ratio = i / score[0]
-                rel_scors.append(rel)
-                scors.append(i)
-                ratio_scors.append(ratio)
-        except KeyError:
-            trs.extend(repeat("-", k_num))
-            position.extend(repeat("-", k_num))
-            scors.extend(repeat("-", k_num))
-            rel_scors.extend(repeat("-", k_num))
-            ratio_scors.extend(repeat("-", k_num))
-            indexes.extend(repeat("-", k_num))
-    
-    return words, trs, position, scors, rel_scors, ratio_scors, indexes
+        if limit:
+            try:
+                translated, score, ids, k_best = get_nn_lim(word, src_embeddings, src_id2word, tgt_embeddings, tgt_id2word, treshold)
+                n = len(k_best)
+                words.extend([word] * n)
+                indexes.extend(ids)
+                trs.extend(translated)
+                position.extend(range(n))
+                scors.extend(score)
+                rel_scors.extend([score[0] - s for s in score])
+                ratio_scors.extend([s / score[0] for s in score])
+            except KeyError:
+                n = 1
+                words.extend([word] * n)
+                indexes.extend(['-'] * n)
+                trs.extend(['-'] * n)
+                position.extend(['-'] * n)
+                scors.extend(['-'] * n)
+                rel_scors.extend(['-'] * n)
+                ratio_scors.extend(['-'] * n)
+        else:
+            try:
+                translated, score, ids = get_nn_knn(word, src_embeddings, src_id2word, tgt_embeddings, tgt_id2word, treshold)
+                words.extend(repeat(word, treshold))
+                for y in ids:
+                    indexes.append(y)
+                    if len(ids) != treshold:
+                        indexes.extend(repeat(y,treshold))
+                for el in translated:
+                    trs.append(el)
+                    position.append(translated.index(el))
+                for i in score:
+                    rel = score[0] - i
+                    ratio = i / score[0]
+                    rel_scors.append(rel)
+                    scors.append(i)
+                    ratio_scors.append(ratio)
+            except KeyError:
+                n = 1
+                words.extend([word] * n)
+                indexes.extend(['-'] * n)
+                trs.extend(['-'] * n)
+                position.extend(['-'] * n)
+                scors.extend(['-'] * n)
+                rel_scors.extend(['-'] * n)
+                ratio_scors.extend(['-'] * n)
 
+    return words, trs, position, scors, rel_scors, ratio_scors, indexes
 
 
 def making_df(src_lng, tgt_lng, words, trs, position, scors, rel_scors, ratio_scors, indexes):
@@ -109,7 +151,6 @@ def making_df(src_lng, tgt_lng, words, trs, position, scors, rel_scors, ratio_sc
     return result
 
 
-
 def computing_accuracy(result, eval_df, src_lng, tgt_lng):
     merged_df = pd.merge(result, eval_df, how='left',indicator=True, on=[src_lng, tgt_lng])
     correct = merged_df[merged_df["_merge"] == 'both']
@@ -120,7 +161,8 @@ def computing_accuracy(result, eval_df, src_lng, tgt_lng):
     return merged_df
 
 
-def main(src_lng, tgt_lng, src_path, tgt_path, eval_df, k_num, nmax, output):
+def main(src_lng, tgt_lng, src_path, tgt_path, eval_df, limit, treshold, nmax, output):
+    treshold = int(treshold)
     print("Loading source embeddings.")
     src_embeddings, src_id2word, src_word2id = load_vec(src_path, nmax)
     print("Loading target embeddings.")
@@ -128,7 +170,7 @@ def main(src_lng, tgt_lng, src_path, tgt_path, eval_df, k_num, nmax, output):
     print("Loading evaluation dataframe.")
     eval_df = pd.read_csv(eval_df)
     print("Getting scores and translation equivalents.")
-    words, trs, position, scors, rel_scors, ratio_scors, indexes = get_tgt(eval_df, src_lng, tgt_lng, src_embeddings, src_id2word, tgt_embeddings, tgt_id2word, k_num)
+    words, trs, position, scors, rel_scors, ratio_scors, indexes = get_tgt(eval_df, src_lng, tgt_lng, src_embeddings, src_id2word, tgt_embeddings, tgt_id2word, limit, treshold)
     print("Creating dataframe with results.")
     df = making_df(src_lng, tgt_lng, words, trs, position, scors, rel_scors, ratio_scors, indexes)
     print("Computing results...")
@@ -144,11 +186,12 @@ if __name__ == "__main__":
     parser.add_argument("--src_path", type=str, help="Path to the source embeddings")
     parser.add_argument("--tgt_path", type=str, help="Path to the target embeddings")
     parser.add_argument("--eval_df", type=str, help="Path to the evaluation dataframe")
-    parser.add_argument("--k_num", type=int, help="Precision")
+    parser.add_argument("--limit", type=bool, help="True if retrieving equivalents based on the cosine similarity, False for retrieving based on the KNN position")
+    parser.add_argument("--treshold", type=float, help="If limit=True: limit for the lowest cosine similarity, if limi=False: KNN number")
     parser.add_argument("--nmax", type=int, help="The number of loaded embeddings, -1 to disable")
     parser.add_argument("--output", type=str, help="Path to save the dataframe")
 
     args = parser.parse_args()
 
-    main(args.src_lng, args.tgt_lng, args.src_path, args.tgt_path, args.eval_df, args.k_num, args.nmax, args.output)
+    main(args.src_lng, args.tgt_lng, args.src_path, args.tgt_path, args.eval_df, args.limit, args.treshold, args.nmax, args.output)
 
