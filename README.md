@@ -1,6 +1,6 @@
 # Limit_computer
 
-A script for extracting the target words from cross-lingual word embeddings by limiting the cosine similarity. The script partially uses code from [MUSE](https://github.com/facebookresearch/MUSE) [(Conneau et al., 2017)](https://arxiv.org/pdf/1710.04087.pdf). Part of the repository is the script for annotating the data manually. In [demo.ipynb](https://github.com/x-mia/Limit_computer/blob/main/demo.ipynb) you can visualize the graphs using sample of manually annotated dataframe. More information in the article [Parallel, or Comparable? That Is the Question](https://nlp.fi.muni.cz/raslan/2022/paper8.pdf).
+A script for extracting the target words from cross-lingual word embeddings by either limiting the cosine similarity or selecting k nearest neighbors. The script partially uses code from [MUSE](https://github.com/facebookresearch/MUSE) [(Conneau et al., 2017)](https://arxiv.org/pdf/1710.04087.pdf). Part of the repository is the script for annotating the data manually. In [demo.ipynb](https://github.com/x-mia/Limit_computer/blob/main/demo.ipynb) you can visualize the graphs using sample of manually annotated dataframe. More information in the article [Parallel, or Comparable? That Is the Question](https://nlp.fi.muni.cz/raslan/2022/paper8.pdf).
 
 ### Requirements
 * [NumPy](https://numpy.org/)
@@ -8,24 +8,24 @@ A script for extracting the target words from cross-lingual word embeddings by l
 * [Tqdm](https://tqdm.github.io/)
 * [Matplotlib](https://matplotlib.org/)
 
-### Evaluating without limit (using K nearest neighbours)
-To evaluate aligned embeddings using K nearest neighbours, simply run:
+### Evaluating the cross-lingual embedding model
+To evaluate aligned embeddings using the cosine similarity score limit, add the --limit flag for enabling the limit and select treshold for the lowest cosine similarity, otherwise the script will use KNN search, in this case select treshold for K nearest neighbours, examples:
+With limit:
 ```bash
-python eval.py --src_lng SRC_LNG --tgt_lng TGT_LNG --src_path SRC_PATH --tgt_path TGT_PATH --eval_df EVAL_DF --k_num K_NUM --nmax NMAX --output OUTPUT
+python eval_with_lim.py --src_lng SRC_LNG --tgt_lng TGT_LNG --src_path SRC_PATH --tgt_path TGT_PATH --eval_df EVAL_DF --limit LIMIT --treshold TRESHOLD --nmax NMAX --output OUTPUT
 ```
 Example:
 ```bash
-python eval.py --src_lng et --tgt_lng sk --src_path vectors-et.txt --tgt_path vectors-sk.txt --eval_df et-sk.csv --k_num 3 --nmax 50000 --output df.csv
+python eval_with_lim.py --src_lng et --tgt_lng sk --src_path vectors-et.txt --tgt_path vectors-sk.txt --eval_df et-sk.csv --limit --treshold 0.6 --nmax 50000 --output df.csv
 ```
 
-### Evaluating with limiting the scores
-To evaluate aligned embeddings using the cosine similarity score limit, simply run:
+K nearest neighbours:
 ```bash
-python eval_with_lim.py --src_lng SRC_LNG --tgt_lng TGT_LNG --src_path SRC_PATH --tgt_path TGT_PATH --eval_df EVAL_DF --limit LIMIT --nmax NMAX --output OUTPUT
+python eval_with_lim.py --src_lng SRC_LNG --tgt_lng TGT_LNG --src_path SRC_PATH --tgt_path TGT_PATH --eval_df EVAL_DF --treshold TRESHOLD --nmax NMAX --output OUTPUT
 ```
 Example:
 ```bash
-python eval_with_lim.py --src_lng et --tgt_lng sk --src_path vectors-et.txt --tgt_path vectors-sk.txt --eval_df et-sk.csv --limit 0.6 --nmax 50000 --output df.csv
+python eval_with_lim.py --src_lng et --tgt_lng sk --src_path vectors-et.txt --tgt_path vectors-sk.txt --eval_df et-sk.csv --treshold 3 --nmax 50000 --output df.csv
 ```
 
 ### Annotating the data
