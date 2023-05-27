@@ -21,21 +21,21 @@ python eval.py --src_lng et --tgt_lng sk --src_path vectors-et.txt --tgt_path ve
 ### Evaluating with limiting the scores
 To evaluate aligned embeddings using the cosine similarity score limit, simply run:
 ```bash
-python eval.py --src_lng SRC_LNG --tgt_lng TGT_LNG --src_path SRC_PATH --tgt_path TGT_PATH --eval_df EVAL_DF --limit LIMIT --nmax NMAX --output OUTPUT
+python eval_with_lim.py --src_lng SRC_LNG --tgt_lng TGT_LNG --src_path SRC_PATH --tgt_path TGT_PATH --eval_df EVAL_DF --limit LIMIT --nmax NMAX --output OUTPUT
 ```
 Example:
 ```bash
-python eval.py --src_lng et --tgt_lng sk --src_path vectors-et.txt --tgt_path vectors-sk.txt --eval_df et-sk.csv --limit 0.6 --nmax 50000 --output df.csv
+python eval_with_lim.py --src_lng et --tgt_lng sk --src_path vectors-et.txt --tgt_path vectors-sk.txt --eval_df et-sk.csv --limit 0.6 --nmax 50000 --output df.csv
 ```
 
 ### Annotating the data
 To manually annotate the data, simply run:
 ```bash
-python eval.py --src_lng SRC_LNG --tgt_lng TGT_LNG --df_path DF_PATH --limit LIMIT --output OUTPUT
+python annotate_data.py --src_lng SRC_LNG --tgt_lng TGT_LNG --df_path DF_PATH --limit LIMIT --output OUTPUT
 ```
 Example:
 ```bash
-python eval.py --src_lng et --tgt_lng sk --df_path et-sk.csv --limit 0.6 --output annotated_df.csv
+python annotate_data.py --src_lng et --tgt_lng sk --df_path et-sk.csv --limit 0.6 --output annotated_df.csv
 ```
 
 ### References
