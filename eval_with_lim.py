@@ -121,8 +121,8 @@ def computing_accuracy(result, eval_df, src_lng, tgt_lng):
     correct = merged_df[merged_df["_merge"] == 'both']
     precision = len(correct)/len(result)
     recall = len(correct)/len(eval_df)
-    print("Precision is: ", precision)
-    print("Recall is: ", recall)
+    print("Precision with limit is: ", precision)
+    print("Recall with limit is: ", recall)
     return merged_df
 
 

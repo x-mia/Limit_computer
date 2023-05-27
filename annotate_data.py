@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
-
 
 # # Data Annotator
 # Importing
@@ -11,8 +9,6 @@ import argparse
 import pandas as pd
 import numpy as np
 
-
-# In[ ]:
 
 
 def annotate_data(df, src_lng, tgt_lng):
@@ -33,16 +29,11 @@ def annotate_data(df, src_lng, tgt_lng):
     return df
 
 
-# In[ ]:
-
-
 def computing_accuracy_without_L(df):
     yes = df[df['correctness'] == "yes"]
     accuracy = len(yes)/len(df)
     print("Accuracy without limit is: ", accuracy)
 
-
-# In[ ]:
 
 
 def computing_accuracy_with_L(df, limit):
@@ -62,9 +53,6 @@ def computing_accuracy_with_L(df, limit):
                 yes = yes + 1
     accuracy = yes/count
     print("Accuracy with limit is: ", accuracy)
-
-
-# In[ ]:
 
 
 def main(src_lng, tgt_lng, df_path, limit, output):
