@@ -12,20 +12,20 @@ A script for extracting the target words from cross-lingual word embeddings by e
 To evaluate aligned embeddings using the cosine similarity score limit, add the --limit flag for enabling the limit and select treshold for the lowest cosine similarity, otherwise the script will use KNN search, in this case select treshold for K nearest neighbours, examples:
 With limit:
 ```bash
-python eval_with_lim.py --src_lng SRC_LNG --tgt_lng TGT_LNG --src_path SRC_PATH --tgt_path TGT_PATH --eval_df EVAL_DF --limit LIMIT --treshold TRESHOLD --nmax NMAX --output OUTPUT
+python eval.py --src_lng SRC_LNG --tgt_lng TGT_LNG --src_path SRC_PATH --tgt_path TGT_PATH --eval_df EVAL_DF --limit LIMIT --treshold TRESHOLD --nmax NMAX --output OUTPUT
 ```
 Example:
 ```bash
-python eval_with_lim.py --src_lng et --tgt_lng sk --src_path vectors-et.txt --tgt_path vectors-sk.txt --eval_df et-sk.csv --limit --treshold 0.6 --nmax 50000 --output df.csv
+python eval.py --src_lng et --tgt_lng sk --src_path vectors-et.txt --tgt_path vectors-sk.txt --eval_df et-sk.csv --limit --treshold 0.6 --nmax 50000 --output df.csv
 ```
 
 K nearest neighbours:
 ```bash
-python eval_with_lim.py --src_lng SRC_LNG --tgt_lng TGT_LNG --src_path SRC_PATH --tgt_path TGT_PATH --eval_df EVAL_DF --treshold TRESHOLD --nmax NMAX --output OUTPUT
+python eval.py --src_lng SRC_LNG --tgt_lng TGT_LNG --src_path SRC_PATH --tgt_path TGT_PATH --eval_df EVAL_DF --treshold TRESHOLD --nmax NMAX --output OUTPUT
 ```
 Example:
 ```bash
-python eval_with_lim.py --src_lng et --tgt_lng sk --src_path vectors-et.txt --tgt_path vectors-sk.txt --eval_df et-sk.csv --treshold 3 --nmax 50000 --output df.csv
+python eval.py --src_lng et --tgt_lng sk --src_path vectors-et.txt --tgt_path vectors-sk.txt --eval_df et-sk.csv --treshold 3 --nmax 50000 --output df.csv
 ```
 
 ### Annotating the data
